@@ -20,6 +20,12 @@ public class Hacker : MonoBehaviour {
     GameState currentScreen = GameState.MainMenu;   //  Will hold the current screen state
     string password;                                //  Will wold the password to be cracked;
 
+    //  This flag was added to comply with the SED document, where we say that
+    //  the we only reshuffle the password characters if the user does not guess
+    //  it correctly, thus avoiding changing the password to another within the
+    //  set.
+    bool changePassword;                            //  Flag to know when to change the password
+
 	//  Use this for initialization
     //  We call the ShowMainMenu() method to initialize the game
 	void Start () {
@@ -50,6 +56,10 @@ public class Hacker : MonoBehaviour {
 
         //  We set our current screen state as the main menu
         currentScreen = GameState.MainMenu;
+
+        //  We also set our changePassword flag to true, because we are going
+        //  to attempt to crack a new password.
+        changePassword = true;
     }
 
     //  The OnUserInput method is special.  It is called everytime the user
@@ -87,26 +97,41 @@ public class Hacker : MonoBehaviour {
         }
     }
 
+    //  This method validates if the password the user entered is the correct
+    //  one.  If it is, then we display the win screen, otherwise we kee asking
+    //  for the correct password.
     private void CheckPassword(string input)
     {
+        //  If the user input matches the desired password then call the
+        //  DisplayWinScreen() method.
         if (input == password)
         {
             DisplayWinScreen();
         }
+        //  Otherwise, we call again the AskForPassword() method.
         else
         {
             AskForPassword();
         }
     }
 
+    //  This method updates the current game state and displays the win screen.
     private void DisplayWinScreen()
     {
+        //  We set the current game state to be the Win screen.  This line was
+        //  added because I missed it while coding it in class.
+        currentScreen = GameState.Win;
+
+        //  Then we clear the screen
         Terminal.ClearScreen();
 
+        //  Finally, we call the ShowLevelReward and show the user the hit that
+        //  they can type menu anytime they want.
         ShowLevelReward();
         Terminal.WriteLine(menuHint);
     }
 
+    //  This method shows a reward based on the level of difficulty hacked.
     private void ShowLevelReward()
     {
         //  Depending on the level, this method shows a different reward.
@@ -150,6 +175,7 @@ public class Hacker : MonoBehaviour {
         }
     }
 
+    //  This method validates the user's input when the game state is MainMenu.
     void RunMainMenu(string input)
     {
         //  We first check that the input is a valid input
@@ -176,6 +202,8 @@ public class Hacker : MonoBehaviour {
         }
     }
 
+    //  This method set the current game state to Password screen and chooses
+    //  a new password if needed.
     private void AskForPassword()
     {
         //  We set our current game state as Password
@@ -184,15 +212,27 @@ public class Hacker : MonoBehaviour {
         //  We clear our terminal screen
         Terminal.ClearScreen();
 
-        //  We call the SetRandomPassword() method
-        SetRandomPassword();
+        //  We call the SetRandomPassword() method if we need to change our
+        //  password.
+        if (changePassword) {
+            SetRandomPassword();
+        }
 
+        //  We ask the user to enter the password, giving them a hint of
+        //  its characters.
         Terminal.WriteLine("Enter your password. Hint: " + password.Anagram());
         Terminal.WriteLine(menuHint);
     }
 
+    //  This method randomly choses a password to be cracked, based on the level
+    //  the user chose.
     private void SetRandomPassword()
     {
+        //  Since we are choosing a new password to crack, we set our
+        //  changePassword flag to false.  This way, the game won't change the
+        //  password if the use does not guess correctly.
+        changePassword = false;
+
         //  Depending on the selected level, we choose a random password to crack
         switch(level)
         {
@@ -207,6 +247,9 @@ public class Hacker : MonoBehaviour {
                 break;
             default:
                 Debug.LogError("Invalid level.  How did you manage that?");
+                //  Since there was an error reaching these lines of code, we
+                //  set our changePassword flag to true once more.
+                changePassword = true;
                 break;
         }
     }
