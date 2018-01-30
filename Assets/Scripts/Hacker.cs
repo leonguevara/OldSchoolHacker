@@ -234,7 +234,7 @@ public class Hacker : MonoBehaviour {
         changePassword = false;
 
         //  Depending on the selected level, we choose a random password to crack
-        switch(level)
+        switch (level)
         {
             case 1:
                 password = level1Passwords[UnityEngine.Random.Range(0, level1Passwords.Length)];
